@@ -74,7 +74,7 @@ app.get('/', function (req, res) {
   }
 });
 
-app.get('/nvpair', function (req, res) {
+app.get('/setnvpair', function (req, res) {
   // try to initialize the db on every request if it's not already
   // initialized.
     
@@ -91,16 +91,6 @@ app.get('/nvpair', function (req, res) {
       res.send(doc);
       console.log(doc);//else case
   });  
-    
-    
-    
-  if (db) {
-    db.collection('counts').count(function(err, count ){
-      res.send('{ "gift": "' + giftreceiver + '" }');
-    });
-  } else {
-    res.send('{ "gift": "-1" }');
-  }
 });
 
 app.get('/setnvpair', function (req, res) {
