@@ -74,9 +74,10 @@ app.get('/', function (req, res) {
   }
 });
 
+  // Get the nv pair - new code
+
 app.get('/getnvpair', function (req, res) {
-  // try to initialize the db on every request if it's not already
-  // initialized.
+
     
   var giftreceiver = req.param('receiver');
     
@@ -93,9 +94,9 @@ app.get('/getnvpair', function (req, res) {
   });  
 });
 
+  // Set the nv pair - new code
+
 app.get('/setnvpair', function (req, res) {
-  // try to initialize the db on every request if it's not already
-  // initialized.
     
   var giftreceiver = req.param('receiver');
   var giftdescription = req.param('wish');
