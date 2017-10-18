@@ -74,7 +74,7 @@ app.get('/', function (req, res) {
   }
 });
 
-app.get('/NVpair', function (req, res) {
+app.get('/nvpair', function (req, res) {
   // try to initialize the db on every request if it's not already
   // initialized.
     
@@ -83,6 +83,17 @@ app.get('/NVpair', function (req, res) {
   if (!db) {
     initDb(function(err){});
   }
+    
+  db.collection('gifts').findOne({'receiver':giftreceiver})
+ .then(function(doc) {
+        if(!doc)
+            throw new Error('No record found.');
+      res.send(doc);
+      console.log(doc);//else case
+  });  
+    
+    
+    
   if (db) {
     db.collection('counts').count(function(err, count ){
       res.send('{ "gift": "' + giftreceiver + '" }');
@@ -92,6 +103,22 @@ app.get('/NVpair', function (req, res) {
   }
 });
 
+app.get('/setnvpair', function (req, res) {
+  // try to initialize the db on every request if it's not already
+  // initialized.
+    
+  var giftreceiver = req.param('receiver');
+  var giftdescription = req.param('wish');
+    
+  if (!db) {
+    initDb(function(err){});
+  }
+  if (db) {
+    var col = db.collection('gifts');
+    // Create a document with request IP and current time of request
+    var rc = col.insert({receiver: "'+ giftreceiver + '", wish: "'+ giftdescription +'"});
+    res.send('{ "returncode": "success" }');
+});
 
 app.get('/pagecount', function (req, res) {
   // try to initialize the db on every request if it's not already
