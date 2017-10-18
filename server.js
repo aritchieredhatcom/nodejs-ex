@@ -118,6 +118,7 @@ app.get('/setnvpair', function (req, res) {
     // Create a document with request IP and current time of request
     var rc = col.insert({receiver: "'+ giftreceiver + '", wish: "'+ giftdescription +'"});
     res.send('{ "returncode": "success" }');
+  }
 });
 
 app.get('/pagecount', function (req, res) {
