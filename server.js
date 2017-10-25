@@ -76,41 +76,160 @@ app.get('/', function (req, res) {
 
   // Get the nv pair - new code
 
-app.get('/getnvpair', function (req, res) {
-
-    
-  var giftreceiver = req.param('receiver');
-    
-  if (!db) {
-    initDb(function(err){});
-  }
-    
-  db.collection('gifts').findOne({'receiver':giftreceiver})
- .then(function(doc) {
-        if(!doc)
-            throw new Error('No record found.');
-      res.send(doc);
-      console.log(doc);//else case
-  });  
-});
+/// get goes here   
+  
 
   // Set the nv pair - new code
 
-app.get('/setnvpair', function (req, res) {
-    
-  var giftreceiver = req.param('receiver');
-  var giftdescription = req.param('wish');
-    
-  if (!db) {
-    initDb(function(err){});
-  }
-  if (db) {
-    var col = db.collection('gifts');
-    // Create a document with request IP and current time of request
-    var rc = col.insert({receiver: "'+ giftreceiver + '", wish: "'+ giftdescription +'"});
-    res.send('{ "returncode": "success" }');
-  }
-});
+
+//set goes here
+
+ app.get('/set', function (req, res) {
+ console.log('Set request is processing...');
+	 // extract parameters
+	 var surveyID = req.query.surveyID;
+	 var panelID = req.query.panelID;
+	 var recipientID = req.query.recipientID;
+	 var responseID = req.query.responseID;
+	 var name = req.query.name; // Name (of name-value-pair)
+	 var value = req.query.value; // Value (of name-value-pair)
+	 var filter = {
+	 surveyID: surveyID,
+	 panelID: panelID,
+	 recipientID: recipientID,
+	 responseID: responseID,
+	 name: name
+	 };
+	
+	 // try to initialize the db on every request if it's not already
+	 // initialized.
+	 if (!db) {
+	 initDb(function(err){});
+	 }
+	 if (db) {
+	 try {
+	 var col = db.collection('nvpairs');
+	 var valueJSON = {
+	 surveyID: surveyID,
+	 panelID: panelID,
+	 recipientID: recipientID,
+	 responseID: responseID,
+	 name: name,
+	 value: value,
+	 date: Date.now()
+	 };
+	 console.log('valueJSON = %j', valueJSON);
+	 // Create/replace a document
+	 col.replaceOne( filter, valueJSON, { upsert: true } );
+	 res.send({ result: 'success', rc: 0 });
+	 } catch (e) {
+	 res.send({ result: e, rc: 8 });
+	 console.log('e = %j', e);
+	 console.log('e = %s', e);
+	 };
+	
+	 } else {
+	 res.send({ result: 'failed', rc: 4 });
+	 }
+	});
+	
+	app.get('/getJSON', function (req, res) {
+	 console.log('Get JSON request is processing...');
+	 // extract parameters
+	 var surveyID = req.query.surveyID;
+	 var panelID = req.query.panelID;
+	 var recipientID = req.query.recipientID;
+	 var responseID = req.query.responseID;
+	 var name = req.query.name; // Name (of name-value-pair)
+	 var value = req.query.value; // Value (of name-value-pair)
+	 if (value !== undefined) {
+	 res.send({ result: 'failed', rc: 12 , info: 'unexpected value passed. Not allowed.'});
+	 return;
+	 }
+	 var filter = {
+	 surveyID: surveyID,
+	 panelID: panelID,
+	 recipientID: recipientID,
+	 responseID: responseID,
+	 name: name
+	 };
+	
+	 // try to initialize the db on every request if it's not already
+	 // initialized.
+	 if (!db) {
+	 initDb(function(err){});
+	 }
+	 if (db) {
+	 try {
+	 var col = db.collection('nvpairs');
+	 // Create a document with request IP and current time of request
+	 col.findOne( filter , function(err, doc) {
+	 if (!doc)
+	 res.send({ result: 'success', rc: 0, info: 'not found' });
+	 else {
+	 //console.log('Raw Doc: %j', doc);
+	 //console.log('Value %s', doc.value);
+	 //console.log('JSONValue %j', doc.value);
+	 res.send({ value: doc, result: 'success', rc: 0 });
+	 }
+	 } );
+	 } catch (e) {
+	 console.log('e = %j', e);
+	 res.send({ result: 'failed', rc: 8 });
+	 };
+	 } else {
+	 res.send({ result: 'failed', rc: 4 });
+	 }
+	});
+	
+	
+	app.get('/get', function (req, res) {
+	 console.log('Get request is processing...');
+	 // extract parameters
+	 var surveyID = req.query.surveyID;
+	 var panelID = req.query.panelID;
+	 var recipientID = req.query.recipientID;
+	 var responseID = req.query.responseID;
+	 var name = req.query.name; // Name (of name-value-pair)
+	 var value = req.query.value; // Value (of name-value-pair)
+	 if (value !== undefined) {
+	 res.send(value); // Silly - return value passed
+	 return;
+	 }
+	 var filter = {
+	 surveyID: surveyID,
+	 panelID: panelID,
+	 recipientID: recipientID,
+	 responseID: responseID,
+	 name: name
+	 };
+	
+	 // try to initialize the db on every request if it's not already
+	 // initialized.
+	 if (!db) {
+	 initDb(function(err){});
+	 }
+	 if (db) {
+	 try {
+	 var col = db.collection('nvpairs');
+	 col.findOne( filter , function(err, doc) {
+	 if (!doc)
+	 res.send('');
+	 else {
+	 //console.log('Raw Doc: %j', doc);
+	 //console.log('Value %s', doc.value);
+	 //console.log('JSONValue %j', doc.value);
+	 res.send(doc.value);
+	 }
+	 } );
+	 } catch (e) {
+	 console.log('e = %j', e);
+	 res.send({ result: 'failed', rc: 8 });
+	 };
+	 } else {
+	 res.send({ });
+	 }
+	});
 
 app.get('/pagecount', function (req, res) {
   // try to initialize the db on every request if it's not already
